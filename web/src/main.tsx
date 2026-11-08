@@ -4,6 +4,7 @@ import './index.css';
 import App from './App.tsx';
 import { AppStateProvider } from './state/AppStateContext.tsx';
 import { I18nProvider } from './i18n/I18nContext.tsx';
+import { TeamStateProvider } from './team/TeamStateContext';
 import { isWebPlatform } from './platform.ts';
 import { setPwaUpdateReady, watchForPwaUpdates } from './update/pwaUpdates.ts';
 
@@ -25,7 +26,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <I18nProvider>
       <AppStateProvider>
-        <App />
+        <TeamStateProvider>
+          <App />
+        </TeamStateProvider>
       </AppStateProvider>
     </I18nProvider>
   </StrictMode>,

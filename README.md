@@ -1,10 +1,26 @@
-# rotazioni volley
-rappresentazione via web degli schemi di ricezione a 3 nella pallavolo rispetto alla posizione del palleggiatore
+# Rotazioni Volley
 
-Questa applicazione web è la traduzione in italiano del progetto [VBRotations](https://github.com/monkeysppp/VBRotations) di [Andy Edwards](https://github.com/monkeysppp)
+Applicazione web (PWA installabile) per gli schemi di rotazione e ricezione della pallavolo, con un modulo per gestire la propria squadra: rosa, partite del campionato, convocazioni, assegnazione dei ruoli e tracciamento dei cambi.
 
-l'applicazione può essere usata a questo indirizzo [https://napo.github.io/rotazionivolley/](https://napo.github.io/rotazionivolley/)
+Questo repository è un **fork** a cura di [Gianluca Di Stefano](https://github.com/Gianluca-Di-Stefano), che deriva da:
 
+- [rotazionivolley](https://github.com/napo/rotazionivolley) di Maurizio Napolitano, a sua volta tratto da
+- [VBRotations](https://github.com/monkeysppp/VBRotations) di Andy Edwards (licenza Apache 2.0).
+
+L'applicazione è disponibile all'indirizzo <https://rotazioni.volleyserve.it>.
+
+## Cos'è stato aggiunto in questo fork
+
+Oltre a tutte le funzionalità originali (schemi di rotazione, editor, falli di posizione, competenze di ricezione, export), questo fork aggiunge:
+
+- **Squadra** — la rosa completa, con nome, cognome, sesso, ruolo, livello (facoltativo) e note per ogni giocatore.
+- **Campionato** — l'elenco delle partite (avversario, data, casa/fuori, giornata, luogo, note). Ogni partita ha le proprie:
+  - **Convocazioni**: quali giocatori della rosa chiamare;
+  - **Ruoli**: i 6 in campo + il libero assegnati alle posizioni di rotazione, con validazione delle regole della squadra mista;
+  - **Cambi**: le sostituzioni durante la partita, con pannello testuale e anteprima animata del campo.
+- **Regole configurabili**: giocatori in campo, donne minime, libero obbligatorio e sua sostituzione con un uomo — con valori predefiniti adatti a una squadra mista, modificabili dall'interfaccia.
+- **Privacy on-device**: rosa, partite, convocazioni, ruoli e cambi restano solo sul dispositivo (nel browser), mai inviati a un server. Come per gli schemi, esportazione e importazione via JSON.
+- **PWA installabile**: su Android (e desktop) si installa dal browser, funziona offline e si aggiorna da sola; nessun APK necessario.
 
 ## Cosa si può fare
 
@@ -16,12 +32,23 @@ l'applicazione può essere usata a questo indirizzo [https://napo.github.io/rota
 - **Competenze di ricezione**: nella fase Ricezione il campo si divide in una zona colorata per ogni ricevitore, con una fascia più scura lungo i confini che indica chi prende la palla che cade lì (lati sinistra/destra/avanti/dietro dal punto di vista del giocatore). Con "Modifica" si trascinano i vertici condivisi, si aggiungono vertici con il "+" e si eliminano con il doppio clic, si danno o tolgono zone ai giocatori; i conflitti (nessuno o entrambi competenti su un confine) vengono segnalati e le modifiche valgono per lo schema solo con "Salva". Falli di posizione e competenze sono due schede del pannello sotto il campo.
 - **Note**: un commento per ogni rotazione e fase, riportato anche negli export.
 - **Export**: PNG, PDF (pagina singola o sequenza) e video animato (`.webm`, o `.mp4` su Safari), con la possibilità di includere falli di posizione e competenze di ricezione. Dallo stesso menu si esporta la configurazione dello schema in uso (JSON), competenze comprese.
-- **Sostieni lo sviluppo**: nella pagina Info, una donazione volontaria tramite PayPal (facoltativa, non sblocca nulla); l'app la ricorda solo negli avvisi di aggiornamento.
 - **Installabile come app (PWA)**: dal browser si può installare l'app sulla schermata Home (su iPhone/iPad: Safari → Condividi → "Visualizza altro" → "Aggiungi alla schermata Home"; su Android: Chrome → menu ⋮ → "Installa app"). Funziona anche senza connessione.
-- **App desktop e Android**: gli installer per Windows (`.exe`/`.msi`), macOS (`.dmg`), Linux (`.AppImage`/`.deb`/`.rpm`) e Android (`.apk`) sono allegati a ogni [release](https://github.com/napo/rotazionivolley/releases/latest) e linkati dalla pagina Info della versione web.
+- **App desktop e Android**: gli installer per Windows (`.exe`/`.msi`), macOS (`.dmg`), Linux (`.AppImage`/`.deb`/`.rpm`) e Android (`.apk`) sono allegati a ogni [release](https://github.com/napo/rotazionivolley/releases/latest) del progetto upstream e linkati dalla pagina Info della versione web.
 - **Aggiornamenti**: la versione web/PWA scarica le nuove versioni da sola e propone "Aggiorna ora"; le app desktop/Android segnalano quando c'è una versione più recente (su desktop si installa in-app con un clic), e il controllo si può disattivare dalla pagina Info.
 
 ![](https://raw.githubusercontent.com/napo/rotazionivolley/master/demo/rotazionivolley.gif)
+
+## Sviluppo
+
+Per lo sviluppo, il build e i test vedi [`web/README.md`](web/README.md). In sintesi, dalla cartella `web/`:
+
+```bash
+npm install
+npm run dev        # dev server su http://localhost:5173
+npm run typecheck
+npm run test
+npm run build      # build di produzione in web/dist
+```
 
 ## Licenza
 
@@ -29,5 +56,4 @@ Il software è distribuito con licenza [GNU Affero General Public License v3.0 o
 
 Fino alla versione 2.2.0 il progetto era distribuito con licenza Apache 2.0; le versioni già pubblicate restano disponibili con quella licenza.
 
-Il progetto nasce da [VBRotations](https://github.com/monkeysppp/VBRotations) di Andy Edwards, distribuito con licenza Apache 2.0: le parti che ne derivano (la versione originale in `index.html`, `js/` e `css/` e le posizioni dei giocatori dello schema di ricezione) conservano l'attribuzione e le condizioni della licenza Apache 2.0, compatibile con la AGPL v3. Snap.svg (`js/snap.svg-min.js`) è distribuito con licenza Apache 2.0. Il logotipo PayPal del pulsante per le donazioni (`web/src/info/paypal.svg`) viene dalle icone di pagamento di [Tabler](https://github.com/tabler/tabler-payments) (licenza MIT) ed è incluso nell'applicazione, non caricato da PayPal; PayPal è un marchio di PayPal, Inc.
-
+Il progetto nasce da [VBRotations](https://github.com/monkeysppp/VBRotations) di Andy Edwards, distribuito con licenza Apache 2.0: le parti che ne derivano (la versione originale in `index.html`, `js/` e `css/` e le posizioni dei giocatori dello schema di ricezione) conservano l'attribuzione e le condizioni della licenza Apache 2.0, compatibile con la AGPL v3. Snap.svg (`js/snap.svg-min.js`) è distribuito con licenza Apache 2.0.

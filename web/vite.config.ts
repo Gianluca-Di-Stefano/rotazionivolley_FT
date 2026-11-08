@@ -7,14 +7,17 @@ export default defineConfig({
   base: './',
   plugins: [
     react(),
-    // Installable PWA (e.g. "Add to Home Screen" on iOS) that works offline.
-    // The service worker is registered by src/update/PwaUpdateNotice.tsx, only
-    // on the plain web build, and a new version waits for the user's OK
-    // ('prompt') instead of reloading the page under them.
+    // Installable PWA ("Add to Home Screen" / "Install" on Android Chrome,
+    // "Add to Home Screen" on iOS Safari) that works offline. The service
+    // worker is registered in src/main.tsx (state in src/update/pwaUpdates.ts,
+    // UI in src/update/UpdateNotice.tsx), only on the plain web build, and a
+    // new version waits for the user's OK ('prompt') instead of reloading the
+    // page under them.
     VitePWA({
       registerType: 'prompt',
       injectRegister: false,
       manifest: {
+        id: '/',
         name: 'Rotazioni Volley',
         short_name: 'Rotazioni',
         description: 'Schemi di ricezione a 3 nella pallavolo rispetto alla posizione del palleggiatore.',
@@ -22,6 +25,8 @@ export default defineConfig({
         start_url: './',
         scope: './',
         display: 'standalone',
+        orientation: 'any',
+        categories: ['sports', 'education'],
         background_color: '#fafafa',
         theme_color: '#fafafa',
         icons: [

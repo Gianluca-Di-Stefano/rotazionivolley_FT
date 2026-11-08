@@ -1,8 +1,20 @@
 /** External addresses the app links to — plain links, nothing is contacted until the user opens one. */
+
+/**
+ * This deployment is a fork: source code lives here, and the "Codice sorgente"
+ * link in the Info page points to it.
+ */
+export const FORK_REPOSITORY_URL = 'https://github.com/Gianluca-Di-Stefano/rotazionivolley_FT';
+
+/**
+ * The upstream this fork was taken from (Maurizio Napolitano's rotazionivolley).
+ * The native installers (Windows/macOS/Linux/Android) are published on its
+ * GitHub Releases, so releaseDownloads() builds URLs against this origin.
+ */
 export const SOURCE_REPOSITORY_URL = 'https://github.com/napo/rotazionivolley';
 
-/** Voluntary donation (same PayPal account as the author's other apps, e.g. analisirefertogara). */
-export const PAYPAL_DONATION_URL = 'https://paypal.me/MNapolitano570';
+/** The original project rotazionivolley itself derives from (Apache 2.0). */
+export const UPSTREAM_VBROTATIONS_URL = 'https://github.com/monkeysppp/VBRotations';
 
 /**
  * Direct links to this version's installers on its GitHub Release, named as

@@ -4,9 +4,8 @@ import { APP_VERSION } from '../version';
 import { isAndroidDevice, isInstalledPwa, isIosDevice, isWebPlatform } from '../platform';
 import { isNativeBuild, setUpdateChecksEnabled, updateChecksEnabled } from '../update/updates';
 import { ExternalLink } from '../ExternalLink';
-import { PAYPAL_DONATION_URL, SOURCE_REPOSITORY_URL, releaseDownloads } from '../links';
+import { FORK_REPOSITORY_URL, SOURCE_REPOSITORY_URL, UPSTREAM_VBROTATIONS_URL, releaseDownloads } from '../links';
 import { setVertexRemovalConfirmEnabled, vertexRemovalConfirmEnabled } from '../zones/zonePreferences';
-import paypalLogo from './paypal.svg';
 import './info.css';
 
 interface InfoPanelProps {
@@ -16,8 +15,8 @@ interface InfoPanelProps {
 /**
  * The Info page: a full view in place of the court (like the editor), so the
  * text has room to be read — about the project, the preferences kept on this
- * device, the installers and the donation, as cards side by side on wide
- * screens and stacked on narrow ones.
+ * device and the installers, as cards side by side on wide screens and
+ * stacked on narrow ones.
  */
 export function InfoPanel({ onClose }: InfoPanelProps) {
   const { t } = useI18n();
@@ -50,23 +49,30 @@ export function InfoPanel({ onClose }: InfoPanelProps) {
         <section className="info-page__card" aria-labelledby="info-about-title">
           <h3 id="info-about-title">{t('info.about')}</h3>
           <p>
-            {t('info.project')}{' '}
-            <ExternalLink href="https://github.com/napo">
-              Maurizio Napolitano
-            </ExternalLink>
+            {t('info.forkBy')}{' '}
+            <ExternalLink href={FORK_REPOSITORY_URL}>Gianluca Di Stefano</ExternalLink>
           </p>
-          <p>{t('info.builtOn')}</p>
+          <p>
+            <ExternalLink href={SOURCE_REPOSITORY_URL}>rotazionivolley</ExternalLink>{' '}
+            {t('info.byAuthor')}{' '}
+            <ExternalLink href="https://github.com/napo">Maurizio Napolitano</ExternalLink>,{' '}
+            {t('info.inTurnFrom')}{' '}
+            <ExternalLink href={UPSTREAM_VBROTATIONS_URL}>VBRotations</ExternalLink>{' '}
+            {t('info.byAuthor')}{' '}
+            <ExternalLink href="https://github.com/monkeysppp">Andy Edwards</ExternalLink>{' '}
+            {t('info.apacheLicense')}.
+          </p>
           <p>
             {t('info.sourceLabel')}{' '}
-            <ExternalLink href={SOURCE_REPOSITORY_URL}>
-              {SOURCE_REPOSITORY_URL}
+            <ExternalLink href={FORK_REPOSITORY_URL}>
+              {FORK_REPOSITORY_URL}
             </ExternalLink>
           </p>
           <p>{t('info.aiAssisted')}</p>
           <p>{t('info.version', { version: APP_VERSION })}</p>
           <p>
             {t('info.licenseLabel')}{' '}
-            <ExternalLink href={`${SOURCE_REPOSITORY_URL}/blob/master/LICENSE`}>
+            <ExternalLink href={`${FORK_REPOSITORY_URL}/blob/master/LICENSE`}>
               GNU Affero General Public License v3.0 or later
             </ExternalLink>
           </p>
@@ -130,34 +136,7 @@ export function InfoPanel({ onClose }: InfoPanelProps) {
             )}
           </section>
         )}
-
-        <SupportSection />
       </div>
     </div>
-  );
-}
-
-/**
- * "Sostieni lo sviluppo": the one place the donation is offered without an
- * update having just happened — informative, never pushy (same wording and
- * stance as the author's analisirefertogara). The PayPal button is a plain
- * link with the wordmark stored in the app: nothing is requested from PayPal
- * until the user opens it.
- */
-export function SupportSection() {
-  const { t } = useI18n();
-  return (
-    <section className="info-page__card info-support" aria-labelledby="info-support-title">
-      <h3 id="info-support-title">{t('support.title')}</h3>
-      <p>{t('support.openSource')}</p>
-      <p>{t('support.invite')}</p>
-      <p>
-        <ExternalLink href={PAYPAL_DONATION_URL} className="info-support__button">
-          <img src={paypalLogo} alt="" width="64" height="16" />
-          <span>{t('support.button')}</span>
-        </ExternalLink>
-      </p>
-      <p className="info-page__note">{t('support.note')}</p>
-    </section>
   );
 }

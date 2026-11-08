@@ -12,6 +12,8 @@ import { ExportMenu } from './export/ExportMenu';
 import { ConfigEditor } from './editor/ConfigEditor';
 import { CommentPanel } from './comments/CommentPanel';
 import { InfoPanel } from './info/InfoPanel';
+import { SquadraPanel } from './team/SquadraPanel';
+import { CampionatoPanel } from './team/CampionatoPanel';
 import { UpdateNotice } from './update/UpdateNotice';
 import { LanguageSwitcher } from './i18n/LanguageSwitcher';
 import { useI18n } from './i18n/I18nContext';
@@ -48,7 +50,7 @@ function App() {
   const { t } = useI18n();
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const courtStageApiRef = useRef<CourtStageApi | null>(null);
-  const [view, setView] = useState<'viewer' | 'editor' | 'info'>('viewer');
+  const [view, setView] = useState<'viewer' | 'editor' | 'info' | 'team' | 'championship'>('viewer');
   const [editTarget, setEditTarget] = useState<FormationConfig | undefined>(undefined);
   // The open tab of the court tools panel — also which drawing is on court.
   const [activeTool, setActiveTool] = useState<CourtToolKey | null>(null);
@@ -104,6 +106,14 @@ function App() {
 
   if (view === 'info') {
     return <InfoPanel onClose={() => setView('viewer')} />;
+  }
+
+  if (view === 'team') {
+    return <SquadraPanel onClose={() => setView('viewer')} />;
+  }
+
+  if (view === 'championship') {
+    return <CampionatoPanel onClose={() => setView('viewer')} />;
   }
 
   if (view === 'editor') {
@@ -272,6 +282,26 @@ function App() {
             }}
           >
             {t('app.infoButton')}
+          </button>
+          <button
+            type="button"
+            className="app__header-btn"
+            onClick={() => {
+              leaveZonesDraft();
+              setView('team');
+            }}
+          >
+            {t('team.button')}
+          </button>
+          <button
+            type="button"
+            className="app__header-btn"
+            onClick={() => {
+              leaveZonesDraft();
+              setView('championship');
+            }}
+          >
+            {t('championship.button')}
           </button>
         </div>
       </header>

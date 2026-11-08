@@ -4,7 +4,6 @@ import { APP_VERSION } from '../version';
 import { isInstalledPwa, isIosDevice, isWebPlatform } from '../platform';
 import { usePwaUpdate } from './pwaUpdates';
 import { ExternalLink } from '../ExternalLink';
-import { PAYPAL_DONATION_URL } from '../links';
 import {
   checkForUpdate,
   compareVersions,
@@ -45,10 +44,6 @@ function dismissInstallHint(): void {
  * update/pwaUpdates.ts) does find new versions, and then this offers to
  * reload into them. On iPhone/iPad in Safari it also explains, once, how to
  * install the app from the home screen.
- *
- * Donations: every update banner (available, or just installed) carries the
- * donation link — the only times the app brings it up on its own; otherwise
- * it's just in the Info page (SupportSection), never pushed.
  */
 export function UpdateNotice() {
   const { t } = useI18n();
@@ -81,20 +76,13 @@ export function UpdateNotice() {
     };
   }, [native]);
 
-  const donateLink = (
-    <ExternalLink className="update-notice__btn update-notice__btn--secondary" href={PAYPAL_DONATION_URL}>
-      {t('update.donate')}
-    </ExternalLink>
-  );
-
   if (justUpdated) {
     return (
       <div className="update-notice" role="status" aria-live="polite">
         <p>
-          <strong>{t('update.updated', { version: APP_VERSION })}</strong> {t('update.support')}
+          <strong>{t('update.updated', { version: APP_VERSION })}</strong>
         </p>
         <div className="update-notice__actions">
-          {donateLink}
           <button type="button" className="update-notice__btn update-notice__btn--secondary" onClick={() => setJustUpdated(false)}>
             {t('update.close')}
           </button>
@@ -120,7 +108,6 @@ export function UpdateNotice() {
           >
             {t('update.updateNow')}
           </button>
-          {donateLink}
           <button type="button" className="update-notice__btn update-notice__btn--secondary" onClick={() => setDismissed(true)}>
             {t('update.later')}
           </button>
@@ -183,7 +170,6 @@ export function UpdateNotice() {
             {t('update.download')}
           </ExternalLink>
         )}
-        {donateLink}
         <button
           type="button"
           className="update-notice__btn update-notice__btn--secondary"

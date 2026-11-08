@@ -148,7 +148,7 @@ await page.waitForTimeout(800);
 const faultsShot = await page.locator('.court-stage').screenshot();
 
 // The card itself is plain HTML rendered by the same browser, laid out like
-// the other volleyserve.it previews: brand column on the left, app captures
+// the other previews: brand column on the left, app captures
 // tilted on the right.
 const toDataUrl = (buf) => `data:image/png;base64,${buf.toString('base64')}`;
 const iconDataUrl = toDataUrl(await iconMaster.clone().resize(256, 256, { kernel: 'lanczos3' }).png().toBuffer());
@@ -181,7 +181,7 @@ const SOCIAL_HTML = `<!doctype html><html lang="it"><head><meta charset="utf-8">
     <p>Scegli lo schema di ricezione: l'app muove i giocatori in ogni rotazione e fase e ti mostra i possibili falli di posizione.</p>
     <div class="pills"><span>Rotazioni P1–P6</span><span>Falli di posizione</span><span>Open source</span></div>
   </div>
-  <div class="url">rotazioni.volleyserve.it</div>
+  <div class="url">gianluca-di-stefano.github.io/rotazionivolley_FT</div>
 </body></html>`;
 const socialPage = await browser.newPage({ viewport: { width: 1200, height: 630 } });
 await socialPage.setContent(SOCIAL_HTML, { waitUntil: 'load' });

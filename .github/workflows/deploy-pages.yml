@@ -1,9 +1,9 @@
 name: Deploy web app to GitHub Pages
 
-# Builds web/ and publishes it as the GitHub Pages site (rotazioni.volleyserve.it),
-# replacing the old root-level static site that Pages used to serve directly
-# from the branch. Runs on every push to master that touches the web app, and
-# on demand.
+# Builds web/ and publishes it as a GitHub Pages project site at
+# https://gianluca-di-stefano.github.io/rotazionivolley_FT/ (the fork's own
+# Pages URL; the upstream custom domain rotazioni.volleyserve.it is not used
+# here). Runs on every push to master that touches the web app, and on demand.
 
 on:
   push:

@@ -17,7 +17,7 @@ export default defineConfig({
       registerType: 'prompt',
       injectRegister: false,
       manifest: {
-        id: '/',
+        id: '/rotazionivolley_FT/',
         name: 'Rotazioni Volley',
         short_name: 'Rotazioni',
         description: 'Schemi di ricezione a 3 nella pallavolo rispetto alla posizione del palleggiatore.',

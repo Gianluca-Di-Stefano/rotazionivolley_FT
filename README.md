@@ -7,7 +7,7 @@ Questo repository è un **fork** a cura di [Gianluca Di Stefano](https://github.
 - [rotazionivolley](https://github.com/napo/rotazionivolley) di Maurizio Napolitano, a sua volta tratto da
 - [VBRotations](https://github.com/monkeysppp/VBRotations) di Andy Edwards (licenza Apache 2.0).
 
-L'applicazione è disponibile all'indirizzo <https://rotazioni.volleyserve.it>.
+L'applicazione è disponibile all'indirizzo <https://gianluca-di-stefano.github.io/rotazionivolley_FT/>.
 
 ## Cos'è stato aggiunto in questo fork
 

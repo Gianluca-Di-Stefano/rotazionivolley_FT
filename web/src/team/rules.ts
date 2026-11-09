@@ -1,4 +1,4 @@
-import type { FormationConfig, SetterPosition } from '../configs/schema';
+import type { FormationConfig, PlayerRole, SetterPosition } from '../configs/schema';
 import { getPositions } from '../state/selectors';
 import type { Assignment, Match, MatchRules, Roster, RosterPlayer } from './schema';
 
@@ -25,8 +25,13 @@ function fullName(p: RosterPlayer): string {
 
 /**
  * Conta uomini/donne tra i convocati e controlla le regole che non
- * dipendono dall'associazione ai ruoli (squad size, sesso minimo,
- * presenza di un libero).
+ * dipendono dall'associazione ai ruoli (squad size min/max, sesso minimo,
+ * requisiti di ruolo della partita o, in mancanza, libero obbligatorio).
+ *
+ * Per i ruoli: se la partita ha `requiredRoles` con almeno un valore > 0,
+ * quelli sovrascrivono le regole globali (l'allenatore decide gara per gara
+ * quali ruoli servono, incluso nessuno = tutto facoltativo). Altrimenti si
+ * usa `rules.liberoRequired`.
  */
 export function validateMatch(roster: Roster, match: Match, rules: MatchRules): ValidationResult {
   const issues: RuleIssue[] = [];
@@ -41,12 +46,22 @@ export function validateMatch(roster: Roster, match: Match, rules: MatchRules): 
     issues.push(issue('error', 'missing_players', `${missing} convocato/i non più in rosa.`));
   }
 
-  if (players.length !== rules.squadSize) {
+  // Squad size: minimo e massimo.
+  if (players.length < rules.squadSize) {
     issues.push(
       issue(
         'error',
-        'squad_size',
-        `Servono ${rules.squadSize} giocatori (6 + 1 libero), ora sono ${players.length}.`,
+        'squad_size_min',
+        `Servono almeno ${rules.squadSize} giocatori, ora sono ${players.length}.`,
+      ),
+    );
+  }
+  if (players.length > rules.squadSizeMax) {
+    issues.push(
+      issue(
+        'error',
+        'squad_size_max',
+        `Troppi giocatori: il massimo è ${rules.squadSizeMax}, ora sono ${players.length}.`,
       ),
     );
   }
@@ -62,7 +77,37 @@ export function validateMatch(roster: Roster, match: Match, rules: MatchRules): 
     );
   }
 
-  if (rules.liberoRequired) {
+  // Requisiti di ruolo: se la partita ha requiredRoles con almeno un valore
+  // > 0, usano quelli (sovrascrivono liberoRequired). Altrimenti, fallback
+  // sul flag globale liberoRequired.
+  const roleReq = match.requiredRoles ?? {};
+  const hasCustomRoleReqs = (Object.keys(roleReq) as PlayerRole[]).some(
+    (r) => (roleReq[r] ?? 0) > 0,
+  );
+  const ROLE_LABELS: Record<PlayerRole, string> = {
+    setter: 'palleggiatori',
+    opposite: 'opposti',
+    middle: 'centrali',
+    hitter: 'schiacciatori',
+    libero: 'liberi',
+  };
+
+  if (hasCustomRoleReqs) {
+    for (const role of Object.keys(ROLE_LABELS) as PlayerRole[]) {
+      const required = roleReq[role] ?? 0;
+      if (required <= 0) continue;
+      const have = players.filter((p) => p.preferredRole === role).length;
+      if (have < required) {
+        issues.push(
+          issue(
+            'error',
+            `role_required_${role}`,
+            `Servono almeno ${required} ${ROLE_LABELS[role]}, ora sono ${have}.`,
+          ),
+        );
+      }
+    }
+  } else if (rules.liberoRequired) {
     const hasLibero = players.some((p) => p.preferredRole === 'libero');
     if (!hasLibero) {
       issues.push(
@@ -169,17 +214,22 @@ export function validateAssignment(
   const allSlots = [...config.players, ...config.liberos];
 
   // I 6 titolari sono sempre obbligatori. I liberi sono obbligatori solo se
-  // "attivi", cioè referenziati in almeno un liberoSwap: un libero dichiarato
-  // ma mai usato (es. una riserva) resta opzionale. Così una convocazione da
-  // 7 (6 + 1 libero) è valida anche su schemi che dichiarano 2 liberi.
+  // "attivi", cioè referenziati in almeno un liberoSwap, E se tra i
+  // convocati c'è almeno un giocatore con ruolo libero: se l'allenatore
+  // non ha convocato nessun libero (gara senza libero), non ha senso
+  // pretendere che lo slot venga assegnato. Un libero dichiarato ma mai
+  // usato (es. una riserva) resta comunque opzionale.
   const activeLiberoIds = new Set(
     Object.values(config.liberoSwaps ?? {}).flatMap((byTeam) =>
       Object.values(byTeam).map((sw) => sw.libero),
     ),
   );
+  const hasLiberoInCallup = roster.players.some(
+    (p) => match.playerIds.includes(p.id) && p.preferredRole === 'libero',
+  );
   const requiredSlots = [
     ...config.players,
-    ...config.liberos.filter((l) => activeLiberoIds.has(l.id)),
+    ...(hasLiberoInCallup ? config.liberos.filter((l) => activeLiberoIds.has(l.id)) : []),
   ];
 
   // Slot non assegnati (solo quelli obbligatori)

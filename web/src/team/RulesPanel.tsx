@@ -12,15 +12,25 @@ interface RulesPanelProps {
  * modificabili qui: quando l'allenatore chiarisce i dubbi (libero
  * obbligatorio? deve sostituire un uomo?), basta cambiare un flag.
  *
- * I default sono codificati in `DEFAULT_RULES` (vedi schema.ts): 7 giocatori,
- * 3 donne minimo, libero obbligatorio, sostituisce un uomo, divieto 3 uomini
- * davanti disattivato.
+ * I default sono codificati in `DEFAULT_RULES` (vedi schema.ts): 7-12
+ * giocatori (min-max), 3 donne minimo, libero obbligatorio, sostituisce
+ * un uomo, divieto 3 uomini davanti disattivato.
  */
 export function RulesPanel({ rules, onChange, onReset }: RulesPanelProps) {
   const { t } = useI18n();
 
   function touch(partial: Partial<MatchRules>) {
     onChange({ ...rules, ...partial });
+  }
+
+  // Mantiene min <= max quando l'utente cambia uno dei due.
+  function touchSize(partial: Partial<Pick<MatchRules, 'squadSize' | 'squadSizeMax'>>) {
+    const next = { ...rules, ...partial };
+    if (next.squadSize > next.squadSizeMax) {
+      if (partial.squadSize !== undefined) next.squadSizeMax = next.squadSize;
+      if (partial.squadSizeMax !== undefined) next.squadSize = next.squadSizeMax;
+    }
+    onChange(next);
   }
 
   return (
@@ -30,13 +40,27 @@ export function RulesPanel({ rules, onChange, onReset }: RulesPanelProps) {
 
       <div className="team-form" style={{ marginBottom: '1rem' }}>
         <label>
-          {t('rules.squadSize')}
+          {t('rules.squadSizeMin')}
           <select
             className="team-select"
             value={rules.squadSize}
-            onChange={(e) => touch({ squadSize: Number(e.target.value) })}
+            onChange={(e) => touchSize({ squadSize: Number(e.target.value) })}
           >
-            {[6, 7, 8, 9, 10, 11, 12].map((n) => (
+            {[6, 7, 8, 9, 10, 11, 12, 13, 14].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          {t('rules.squadSizeMax')}
+          <select
+            className="team-select"
+            value={rules.squadSizeMax}
+            onChange={(e) => touchSize({ squadSizeMax: Number(e.target.value) })}
+          >
+            {[6, 7, 8, 9, 10, 11, 12, 13, 14].map((n) => (
               <option key={n} value={n}>
                 {n}
               </option>
@@ -69,7 +93,7 @@ export function RulesPanel({ rules, onChange, onReset }: RulesPanelProps) {
           <strong>{t('rules.liberoRequired')}</strong>
           <br />
           <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>
-            Tra i convocati deve esserci almeno un giocatore con ruolo libero.
+            {t('rules.liberoRequiredHint')}
           </span>
         </span>
       </label>
@@ -120,10 +144,15 @@ export function RulesPanel({ rules, onChange, onReset }: RulesPanelProps) {
       </div>
 
       <div className="team-note">
-        Regole attuali: {rules.squadSize} giocatori, minimo {rules.minWomen} donne, libero{' '}
-        {rules.liberoRequired ? 'obbligatorio' : 'facoltativo'}
-        {rules.liberoRequired && rules.liberoReplacesMan ? ', sostituisce un uomo' : ''}
-        {rules.forbidThreeMenInFront ? ', 3 uomini davanti vietati' : ''}.
+        {t('rules.summary', {
+          min: rules.squadSize,
+          max: rules.squadSizeMax,
+          minWomen: rules.minWomen,
+          libero: rules.liberoRequired ? t('rules.summaryLiberoYes') : t('rules.summaryLiberoNo'),
+          replacesMan:
+            rules.liberoRequired && rules.liberoReplacesMan ? t('rules.summaryReplacesMan') : '',
+          forbid: rules.forbidThreeMenInFront ? t('rules.summaryForbid') : '',
+        })}
       </div>
     </section>
   );

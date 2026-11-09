@@ -78,6 +78,99 @@ describe('validateMatch', () => {
     expect(result.issues.some((i) => i.code === 'min_women')).toBe(true);
   });
 
+  it('accetta più giocatori del minimo purché entro il massimo', () => {
+    const roster = buildRoster([
+      player('m1', 'M', 'setter'),
+      player('m2', 'M', 'opposite'),
+      player('m3', 'M', 'middle'),
+      player('m4', 'M', 'middle'),
+      player('m5', 'M', 'hitter'),
+      player('f1', 'F', 'hitter'),
+      player('f2', 'F', 'hitter'),
+      player('f3', 'F', 'libero'),
+      player('f4', 'F', 'hitter'),
+    ]);
+    // 9 convocati: sopra il minimo (7), sotto il massimo (12).
+    const match = buildMatch(['m1', 'm2', 'm3', 'm4', 'f1', 'f2', 'f3', 'm5', 'f4']);
+    const result = validateMatch(roster, match, DEFAULT_RULES);
+    expect(result.ok).toBe(true);
+  });
+
+  it('rifiuta meno del minimo (squadSize)', () => {
+    const roster = buildRoster([
+      player('m1', 'M'),
+      player('m2', 'M'),
+      player('m3', 'M'),
+      player('f1', 'F'),
+      player('f2', 'F', 'libero'),
+    ]);
+    // 5 convocati: sotto il minimo (7).
+    const match = buildMatch(['m1', 'm2', 'm3', 'f1', 'f2']);
+    const result = validateMatch(roster, match, DEFAULT_RULES);
+    expect(result.ok).toBe(false);
+    expect(result.issues.some((i) => i.code === 'squad_size_min')).toBe(true);
+  });
+
+  it('rifiuta più del massimo (squadSizeMax)', () => {
+    const rules: MatchRules = { ...DEFAULT_RULES, squadSizeMax: 7 };
+    const roster = buildRoster([
+      player('m1', 'M', 'setter'),
+      player('m2', 'M', 'opposite'),
+      player('m3', 'M', 'middle'),
+      player('m4', 'M', 'middle'),
+      player('m5', 'M', 'hitter'),
+      player('f1', 'F', 'hitter'),
+      player('f2', 'F', 'hitter'),
+      player('f3', 'F', 'libero'),
+    ]);
+    // 8 convocati con max 7.
+    const match = buildMatch(['m1', 'm2', 'm3', 'm4', 'f1', 'f2', 'f3', 'm5']);
+    const result = validateMatch(roster, match, rules);
+    expect(result.ok).toBe(false);
+    expect(result.issues.some((i) => i.code === 'squad_size_max')).toBe(true);
+  });
+
+  it('requiredRoles della partita sovrascrive liberoRequired (libero non richiesto)', () => {
+    // La partita richiede 2 palleggiatori e 3 schiacciatori, nessun libero.
+    // Anche se liberoRequired è true (default), la partita non lo vuole.
+    const roster = buildRoster([
+      player('m1', 'M', 'setter'),
+      player('m2', 'M', 'setter'),
+      player('m3', 'M', 'hitter'),
+      player('m4', 'M', 'hitter'),
+      player('f1', 'F', 'hitter'),
+      player('f2', 'F', 'middle'),
+      player('f3', 'F', 'middle'),
+    ]);
+    const match: Match = {
+      ...buildMatch(['m1', 'm2', 'm3', 'm4', 'f1', 'f2', 'f3']),
+      requiredRoles: { setter: 2, hitter: 3 },
+    };
+    const result = validateMatch(roster, match, DEFAULT_RULES);
+    expect(result.ok).toBe(true);
+    expect(result.issues.some((i) => i.code === 'libero_required')).toBe(false);
+  });
+
+  it('requiredRoles segnala se mancano giocatori di un ruolo', () => {
+    const roster = buildRoster([
+      player('m1', 'M', 'setter'),
+      player('m2', 'M', 'hitter'),
+      player('m3', 'M', 'hitter'),
+      player('m4', 'M', 'middle'),
+      player('f1', 'F', 'hitter'),
+      player('f2', 'F', 'middle'),
+      player('f3', 'F', 'libero'),
+    ]);
+    // Richiede 2 palleggiatori ma ce n'è uno solo.
+    const match: Match = {
+      ...buildMatch(['m1', 'm2', 'm3', 'm4', 'f1', 'f2', 'f3']),
+      requiredRoles: { setter: 2, libero: 1 },
+    };
+    const result = validateMatch(roster, match, DEFAULT_RULES);
+    expect(result.ok).toBe(false);
+    expect(result.issues.some((i) => i.code === 'role_required_setter')).toBe(true);
+  });
+
   it('rifiuta se non c\'è un libero e liberoRequired è attivo', () => {
     const roster = buildRoster([
       player('m1', 'M'),
@@ -260,6 +353,33 @@ describe('validateAssignment', () => {
     const result = validateAssignment(roster, match, config, assignment, DEFAULT_RULES);
     expect(result.ok).toBe(true);
     expect(result.issues.some((i) => i.code === 'unassigned_slots')).toBe(false);
+  });
+
+  it('non richiede il libero attivo se nessun libero è tra i convocati', () => {
+    // L'allenatore decide di giocare senza libero: nessun convocato ha
+    // preferredRole libero. Lo slot libero attivo non è obbligatorio.
+    const config = withLiberoSwap(fixtureConfig, 'receive', 1, { libero: 'L1', replaces: 'C1' });
+    const roster = buildRoster([
+      player('m1', 'M', 'setter'),
+      player('m2', 'M', 'opposite'),
+      player('m3', 'M', 'middle'),
+      player('m4', 'M', 'middle'),
+      player('f1', 'F', 'hitter'),
+      player('f2', 'F', 'hitter'),
+      player('f3', 'F', 'hitter'), // niente libero
+    ]);
+    const match = buildMatch(['m1', 'm2', 'm3', 'm4', 'f1', 'f2', 'f3']);
+    const assignment = buildAssignment({
+      P: 'm1',
+      O: 'm2',
+      C1: 'm3',
+      C2: 'm4',
+      S1: 'f1',
+      S2: 'f2',
+      // L1 (attivo) omesso: nessun libero convocato, non obbligatorio
+    });
+    const result = validateAssignment(roster, match, config, assignment, DEFAULT_RULES);
+    expect(result.ok).toBe(true);
   });
 
   it('rifiuta se un rosterPlayer assegnato non è nella callup', () => {

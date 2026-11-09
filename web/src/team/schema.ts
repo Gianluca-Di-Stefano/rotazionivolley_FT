@@ -26,8 +26,10 @@ export type PlayerLevel = z.infer<typeof PlayerLevelSchema>;
 /**
  * Un giocatore della rosa. Diverso da PlayerDef (che è il placeholder
  * simbolico dentro uno schema): qui stiamo descrivendo una persona reale.
- * `preferredRole` è solo un suggerimento per la UI di associazione; non
- * vincola dove può giocare. `level` è facoltativo.
+ * `preferredRole` è il ruolo principale; `secondaryRole` è un eventuale
+ * ruolo secondario (opzionale, utile per giocatori polivalenti). Nessuno
+ * dei due vincola dove può giocare: sono solo suggerimenti per la UI di
+ * associazione. `level` è facoltativo.
  */
 export const RosterPlayerSchema = z.object({
   id: z.string().min(1),
@@ -35,6 +37,7 @@ export const RosterPlayerSchema = z.object({
   lastName: z.string().min(1),
   sex: SexSchema,
   preferredRole: PlayerRoleSchema,
+  secondaryRole: PlayerRoleSchema.optional(),
   level: PlayerLevelSchema.optional(),
   notes: z.string().optional(),
 });
@@ -65,6 +68,14 @@ export const MatchSchema = z.object({
   location: z.string().optional(),
   notes: z.string().optional(),
   playerIds: z.array(z.string().min(1)).default([]),
+  /**
+   * Requisiti di ruolo personalizzati per questa partita: mappa
+   * PlayerRole → numero minimo di convocati con quel preferredRole.
+   * Se assente o tutti zeri, si usano le regole globali (liberoRequired);
+   * se presente con almeno un valore > 0, sovrascrive le regole globali
+   * per i controlli di ruolo (l'allenatore decide cosa serve gara per gara).
+   */
+  requiredRoles: z.record(z.string(), z.number().int().min(0)).optional(),
   updatedAt: z.string(),
 });
 export type Match = z.infer<typeof MatchSchema>;
@@ -105,14 +116,21 @@ export type Substitution = z.infer<typeof SubstitutionSchema>;
  * quando l'allenatore chiarisce i dubbi (libero obbligatorio? deve
  * sostituire un uomo?), basta cambiare il flag senza toccare il codice.
  *
- * Default: 7 giocatori (6+1 libero), almeno 3 donne, libero obbligatorio,
+ * `squadSize` è il numero MINIMO di convocati (default 7 = 6 + 1 libero);
+ * `squadSizeMax` è il massimo (default 12). Le convocazioni di una partita
+ * devono stare tra i due. Per le regole di ruolo, le `MatchRules` danno i
+ * default globali, ma ogni partita può avere i suoi `requiredRoles` che
+ * le sovrascrivono (vedi MatchSchema).
+ *
+ * Default: 7-12 giocatori, almeno 3 donne, libero obbligatorio,
  * sostituisce un uomo. Il divieto "3 uomini davanti" è disattivato di
  * default (come da analisi dell'utente: con libero donna le altre due
  * donne sarebbero opposte, quindi è già coperto).
  */
 export const MatchRulesSchema = z.object({
-  squadSize: z.number().int().min(1).max(12).default(7),
-  minWomen: z.number().int().min(0).max(12).default(3),
+  squadSize: z.number().int().min(1).max(14).default(7),
+  squadSizeMax: z.number().int().min(1).max(14).default(12),
+  minWomen: z.number().int().min(0).max(14).default(3),
   liberoRequired: z.boolean().default(true),
   liberoReplacesMan: z.boolean().default(true),
   forbidThreeMenInFront: z.boolean().default(false),
